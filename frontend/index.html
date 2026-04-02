@@ -104,7 +104,7 @@
           </form>
           <p id="loginError" class="error"></p>
           <div class="demo-creds">
-            <p class="muted" style="font-size:12px;margin-bottom:6px;">Demo credentials</p>
+            <p class="muted" style="font-size:12px;margin-bottom:6px;">Demo credentials (click a button below to auto-fill)</p>
             <div class="cred-pills">
               <span class="cred-pill" data-email="admin@finance.example.com" data-pass="Admin@123">admin</span>
               <span class="cred-pill" data-email="analyst@finance.example.com" data-pass="Analyst@123">analyst</span>
@@ -252,6 +252,13 @@
     </section>
 
   </main>
+
+  <div id="toast" class="toast">
+    <div class="toast-icon">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span id="toastMsg"></span>
+  </div>
 
   <script src="/frontend/app.js?v=20260405"></script>
 </body>

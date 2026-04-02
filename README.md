@@ -29,6 +29,7 @@ It demonstrates:
 
 ## API Highlights
 - `POST /auth/login` (rate limited)
+- `POST /auth/refresh` (refresh token rotation)
 - `GET /auth/me`
 - `GET /dashboard/summary`
 - `GET /records` (returns `items`, `total`, `skip`, `limit`, supports `q` text search)

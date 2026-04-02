@@ -14,7 +14,7 @@ const opsSection       = document.getElementById("opsSection");
 const adminCreateBox   = document.getElementById("adminCreateBox");
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value || 0);
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(value || 0);
 }
 
 async function api(path, options = {}) {
@@ -31,6 +31,17 @@ async function api(path, options = {}) {
   return response.json();
 }
 
+// ── Toast ──
+let toastTimer = null;
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
+// ── Navigation ──
 function showLanding() {
   dashboardSection.classList.add("hidden");
   loginSection.classList.add("hidden");
@@ -62,16 +73,16 @@ function applyRoleVisibility() {
   adminCreateBox.classList.toggle("hidden", !isAdmin);
 }
 
+// ── Render ──
 function renderSummaryCards(summary) {
   const cards = [
-    { label: "Total Income",          value: formatCurrency(summary.total_income) },
-    { label: "Total Expenses",        value: formatCurrency(summary.total_expenses) },
-    { label: "Net Balance",           value: formatCurrency(summary.net_balance) },
-    { label: "Recent Activity (7d)",  value: String(summary.recent_activity_count) },
+    { label: "Total Income",         value: formatCurrency(summary.total_income) },
+    { label: "Total Expenses",       value: formatCurrency(summary.total_expenses) },
+    { label: "Net Balance",          value: formatCurrency(summary.net_balance) },
+    { label: "Recent Activity (7d)", value: String(summary.recent_activity_count) },
   ];
-
   document.getElementById("summaryCards").innerHTML = cards
-    .map((card) => `<article class="panel card"><div class="label">${card.label}</div><div class="value">${card.value}</div></article>`)
+    .map((c) => `<article class="panel card"><div class="label">${c.label}</div><div class="value">${c.value}</div></article>`)
     .join("");
 }
 
@@ -90,7 +101,6 @@ function renderTrendChart(points) {
   const width = 680, height = 260, pad = 34;
   const values = points.flatMap((p) => [p.income, p.expense]);
   const maxVal = Math.max(...values, 1);
-
   const x = (i) => pad + (i * (width - 2 * pad)) / Math.max(points.length - 1, 1);
   const y = (v) => height - pad - (v / maxVal) * (height - 2 * pad);
 
@@ -98,27 +108,29 @@ function renderTrendChart(points) {
   const expensePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${x(i)},${y(p.expense)}`).join(" ");
 
   const incomeDots  = points.map((p, i) =>
-    `<circle cx="${x(i)}" cy="${y(p.income)}" r="4" fill="#4ade80"><title>${p.month}: Income ${p.income}</title></circle>`).join("");
+    `<circle cx="${x(i)}" cy="${y(p.income)}" r="5" fill="#88f7b6" stroke="#fff" stroke-width="1.5"><title>${p.month}: Income ${p.income}</title></circle>`).join("");
   const expenseDots = points.map((p, i) =>
-    `<circle cx="${x(i)}" cy="${y(p.expense)}" r="4" fill="#86efac"><title>${p.month}: Expense ${p.expense}</title></circle>`).join("");
+    `<circle cx="${x(i)}" cy="${y(p.expense)}" r="5" fill="#b91c1c" stroke="#fff" stroke-width="1.5"><title>${p.month}: Expense ${p.expense}</title></circle>`).join("");
 
   const valueLabels = points.map((p, i) =>
-    `<text x="${x(i)}" y="${Math.max(y(p.income) - 8, pad + 14)}" text-anchor="middle" font-size="10" fill="#4ade80">${Math.round(p.income)}</text>
-     <text x="${x(i)}" y="${Math.max(y(p.expense) - 8, pad + 14)}" text-anchor="middle" font-size="10" fill="#86efac">${Math.round(p.expense)}</text>`).join("");
+    `<text x="${x(i)}" y="${Math.max(y(p.income) - 10, pad + 14)}" text-anchor="middle" font-size="11" font-weight="600" fill="#88f7b6">${Math.round(p.income)}</text>
+     <text x="${x(i)}" y="${Math.max(y(p.expense) - 10, pad + 26)}" text-anchor="middle" font-size="11" font-weight="600" fill="#b91c1c">${Math.round(p.expense)}</text>`).join("");
 
   const labels = points.map((p, i) =>
-    `<text x="${x(i)}" y="${height - 10}" text-anchor="middle" font-size="10" fill="#7a8099">${p.month}</text>`).join("");
+    `<text x="${x(i)}" y="${height - 8}" text-anchor="middle" font-size="11" font-weight="500" fill="#edfef4">${p.month}</text>`).join("");
 
   container.innerHTML = `
     <svg viewBox="0 0 ${width} ${height}" width="100%" height="280" role="img" aria-label="Monthly income and expense trend">
-      <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height - pad}" stroke="rgba(255,255,255,0.1)" />
-      <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="rgba(255,255,255,0.1)" />
+      <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height - pad}" stroke="rgba(249, 253, 251, 0.4)" stroke-width="1.5" />
+      <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="rgba(249, 253, 251, 0.4)" stroke-width="1.5" />
       ${labels}
-      <path d="${incomePath}"  fill="none" stroke="#4ade80" stroke-width="2.5" />
-      <path d="${expensePath}" fill="none" stroke="#86efac" stroke-width="2.5" />
+      <path d="${incomePath}"  fill="none" stroke="#88f7b6" stroke-width="3" stroke-linejoin="round" />
+      <path d="${expensePath}" fill="none" stroke="#b91c1c" stroke-width="3" stroke-linejoin="round" />
       ${incomeDots}${expenseDots}${valueLabels}
-      <text x="${pad + 8}"  y="${pad + 12}" font-size="11" fill="#4ade80">Income</text>
-      <text x="${pad + 70}" y="${pad + 12}" font-size="11" fill="#86efac">Expense</text>
+      <rect x="${pad + 4}" y="${pad + 2}" width="10" height="10" rx="2" fill="#88f7b6" />
+      <text x="${pad + 18}" y="${pad + 11}" font-size="11" font-weight="600" fill="#88f7b6">Income</text>
+      <rect x="${pad + 72}" y="${pad + 2}" width="10" height="10" rx="2" fill="#b91c1c" />
+      <text x="${pad + 86}" y="${pad + 11}" font-size="11" font-weight="600" fill="#b91c1c">Expense</text>
     </svg>`;
 }
 
@@ -128,18 +140,14 @@ function renderCategoryBars(categories) {
     container.innerHTML = `<p class="chart-empty">No category data available.</p>`;
     return;
   }
-
   const maxVal = Math.max(...categories.map((c) => c.total), 1);
-  container.innerHTML = `<div class="category-bars">${categories
-    .slice(0, 8)
-    .map((c) => {
-      const pct = Math.round((c.total / maxVal) * 100);
-      return `<div class="bar-row">
-        <div class="bar-label"><span>${c.category}</span><span>${formatCurrency(c.total)}</span></div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-      </div>`;
-    })
-    .join("")}</div>`;
+  container.innerHTML = `<div class="category-bars">${categories.slice(0, 8).map((c) => {
+    const pct = Math.round((c.total / maxVal) * 100);
+    return `<div class="bar-row">
+      <div class="bar-label"><span>${c.category}</span><span>${formatCurrency(c.total)}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join("")}</div>`;
 }
 
 function renderCategoryHighlights(summary) {
@@ -174,35 +182,29 @@ function renderRecords(records, meta = null) {
       ? `Showing ${records.length} of ${meta.total} records`
       : `Showing ${records.length} records`;
   }
-
   if (!records.length) {
     body.innerHTML = `<tr><td colspan="6" class="muted">No records match your filters.</td></tr>`;
     return;
   }
-
-  body.innerHTML = records
-    .map((r) => `<tr>
-        <td>${r.id}</td>
-        <td>${r.record_date}</td>
-        <td>${r.type}</td>
-        <td>${r.category}</td>
-        <td>${formatCurrency(r.amount)}</td>
-        <td>${r.notes || "-"}</td>
-      </tr>`)
-    .join("");
+  body.innerHTML = records.map((r) => `<tr>
+    <td>${r.id}</td>
+    <td>${r.record_date}</td>
+    <td>${r.type}</td>
+    <td>${r.category}</td>
+    <td>${formatCurrency(r.amount)}</td>
+    <td>${r.notes || "-"}</td>
+  </tr>`).join("");
 }
 
 function renderUsers(users) {
   const body = document.getElementById("usersTableBody");
-  body.innerHTML = users
-    .map((u) => `<tr>
-        <td>${u.id}</td>
-        <td>${u.email}</td>
-        <td>${u.full_name}</td>
-        <td>${u.role}</td>
-        <td>${u.is_active ? "active" : "inactive"}</td>
-      </tr>`)
-    .join("");
+  body.innerHTML = users.map((u) => `<tr>
+    <td>${u.id}</td>
+    <td>${u.email}</td>
+    <td>${u.full_name}</td>
+    <td>${u.role}</td>
+    <td>${u.is_active ? "active" : "inactive"}</td>
+  </tr>`).join("");
 }
 
 function renderAuditRows(items) {
@@ -211,14 +213,12 @@ function renderAuditRows(items) {
     body.innerHTML = `<tr><td colspan="4" class="muted">No audit events yet.</td></tr>`;
     return;
   }
-  body.innerHTML = items
-    .map((a) => `<tr>
-        <td>${a.action}</td>
-        <td>${a.resource_type}:${a.resource_id}</td>
-        <td>${a.actor_user_id}</td>
-        <td>${new Date(a.created_at).toLocaleString()}</td>
-      </tr>`)
-    .join("");
+  body.innerHTML = items.map((a) => `<tr>
+    <td>${a.action}</td>
+    <td>${a.resource_type}:${a.resource_id}</td>
+    <td>${a.actor_user_id}</td>
+    <td>${new Date(a.created_at).toLocaleString()}</td>
+  </tr>`).join("");
 }
 
 function renderEventRows(items) {
@@ -227,14 +227,12 @@ function renderEventRows(items) {
     body.innerHTML = `<tr><td colspan="4" class="muted">No domain events yet.</td></tr>`;
     return;
   }
-  body.innerHTML = items
-    .map((e) => `<tr>
-        <td>${e.event_type}</td>
-        <td>${e.aggregate_type}:${e.aggregate_id}</td>
-        <td>${e.status}</td>
-        <td>${new Date(e.created_at).toLocaleString()}</td>
-      </tr>`)
-    .join("");
+  body.innerHTML = items.map((e) => `<tr>
+    <td>${e.event_type}</td>
+    <td>${e.aggregate_type}:${e.aggregate_id}</td>
+    <td>${e.status}</td>
+    <td>${new Date(e.created_at).toLocaleString()}</td>
+  </tr>`).join("");
 }
 
 async function loadDashboardData() {
@@ -272,7 +270,6 @@ async function loadDashboardData() {
 
 async function bootstrapSession() {
   if (!state.token) { showLanding(); return; }
-
   try {
     state.user = await api("/auth/me");
     applyRoleVisibility();
@@ -285,7 +282,7 @@ async function bootstrapSession() {
   }
 }
 
-// ── Navigation ──
+// ── Landing nav ──
 document.getElementById("heroGetStartedBtn").addEventListener("click", showLogin);
 document.getElementById("navSignInBtn").addEventListener("click", showLogin);
 document.getElementById("backToLandingBtn").addEventListener("click", showLanding);
@@ -297,14 +294,31 @@ document.querySelectorAll(".cred-pill").forEach((pill) => {
   });
 });
 
+function setLoginButtonLoading(isLoading) {
+  const loginBtn = document.querySelector("#loginForm button[type='submit']");
+  if (!loginBtn) return;
+
+  if (isLoading) {
+    loginBtn.dataset.originalText = loginBtn.textContent || "Sign In";
+    loginBtn.textContent = "Loading content ...";
+    loginBtn.disabled = true;
+    loginBtn.style.opacity = "0.85";
+    loginBtn.style.cursor = "not-allowed";
+  } else {
+    loginBtn.textContent = loginBtn.dataset.originalText || "Sign In";
+    loginBtn.disabled = false;
+    loginBtn.style.opacity = "";
+    loginBtn.style.cursor = "";
+  }
+}
+
 // ── Auth ──
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   document.getElementById("loginError").textContent = "";
-
   const email    = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
-
+  setLoginButtonLoading(true);
   try {
     const result = await api("/auth/login", {
       method: "POST",
@@ -315,6 +329,8 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     await bootstrapSession();
   } catch (err) {
     document.getElementById("loginError").textContent = err.message;
+  } finally {
+    setLoginButtonLoading(false);
   }
 });
 
@@ -334,7 +350,6 @@ document.getElementById("applyFiltersBtn").addEventListener("click", async () =>
 document.getElementById("createRecordForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   document.getElementById("createRecordError").textContent = "";
-
   try {
     await api("/records", {
       method: "POST",
@@ -347,6 +362,7 @@ document.getElementById("createRecordForm").addEventListener("submit", async (e)
       }),
     });
     e.target.reset();
+    showToast("Record created.");
     await loadDashboardData();
   } catch (err) {
     document.getElementById("createRecordError").textContent = err.message;
@@ -357,7 +373,6 @@ document.getElementById("createRecordForm").addEventListener("submit", async (e)
 document.getElementById("createUserForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   document.getElementById("createUserError").textContent = "";
-
   try {
     await api("/users", {
       method: "POST",
@@ -369,6 +384,7 @@ document.getElementById("createUserForm").addEventListener("submit", async (e) =
       }),
     });
     e.target.reset();
+    showToast("User created.");
     await loadDashboardData();
   } catch (err) {
     document.getElementById("createUserError").textContent = err.message;

@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     jwt_secret_key: str = "replace-with-a-long-random-secret"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 120
+    refresh_token_expire_minutes: int = 10080
 
     @field_validator("database_url", mode="before")
     @classmethod

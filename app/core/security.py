@@ -26,7 +26,13 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
     expire = datetime.now(UTC) + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
-    to_encode: dict[str, Any] = {"sub": subject, "exp": expire}
+    to_encode: dict[str, Any] = {"sub": subject, "exp": expire, "type": "access"}
+    return jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+
+
+def create_refresh_token(subject: str, expires_delta: timedelta | None = None) -> str:
+    expire = datetime.now(UTC) + (expires_delta or timedelta(minutes=settings.refresh_token_expire_minutes))
+    to_encode: dict[str, Any] = {"sub": subject, "exp": expire, "type": "refresh"}
     return jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
@@ -35,3 +41,7 @@ def decode_access_token(token: str) -> dict[str, Any] | None:
         return jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
     except JWTError:
         return None
+
+
+def is_token_type(payload: dict[str, Any], expected: str) -> bool:
+    return payload.get("type") == expected

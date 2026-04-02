@@ -5,4 +5,4 @@ __pycache__/
 .mypy_cache/
 finance.db
 .env
-.study.md
+study.md

@@ -28,14 +28,14 @@
       </nav>
 
       <div class="hero">
-        <div class="hero-badge">Finance Data Processing Platform</div>
+        <div class="hero-badge">Finance Data Processing</div>
         <h1 class="hero-title">
-          Intelligent Finance<br />
-          <span class="gradient-text">Analytics & Control</span>
+          Records, roles,<br />
+          <span class="gradient-text">and audit trails.</span>
         </h1>
         <p class="hero-sub">
-          Role-based access control, real-time summaries, audit trails,
-          and event-driven pipelines — all in one secure console.
+          A backend-first finance console with RBAC, filterable records,
+          structured audit logs, and an outbox event pipeline.
         </p>
         <div class="hero-actions">
           <button id="heroGetStartedBtn" class="btn-primary btn-lg">
@@ -47,24 +47,32 @@
 
         <div class="feature-grid">
           <div class="feature-card">
-            <div class="feature-icon">🔐</div>
+            <div class="feature-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
             <div class="feature-title">Role-Based Access</div>
-            <div class="feature-desc">Viewer, Analyst, Admin — granular permission layers.</div>
+            <div class="feature-desc">Three roles — viewer, analyst, admin — each with scoped permissions.</div>
           </div>
           <div class="feature-card">
-            <div class="feature-icon">📊</div>
-            <div class="feature-title">Live Analytics</div>
-            <div class="feature-desc">Monthly trends, category breakdowns, health snapshots.</div>
+            <div class="feature-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div class="feature-title">Dashboard Analytics</div>
+            <div class="feature-desc">Monthly trends, category totals, and a financial health snapshot.</div>
           </div>
           <div class="feature-card">
-            <div class="feature-icon">📋</div>
-            <div class="feature-title">Audit Trails</div>
-            <div class="feature-desc">Every action logged with actor, resource, and timestamp.</div>
+            <div class="feature-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div class="feature-title">Audit Logs</div>
+            <div class="feature-desc">Actor, action, resource, and timestamp recorded for every mutation.</div>
           </div>
           <div class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <div class="feature-title">Event Pipeline</div>
-            <div class="feature-desc">Transactional outbox with optional Kafka fan-out.</div>
+            <div class="feature-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="feature-title">Event Outbox</div>
+            <div class="feature-desc">Transactional outbox table with status tracking and Kafka fan-out.</div>
           </div>
         </div>
       </div>
@@ -85,8 +93,8 @@
           <div class="auth-logo">
             <span class="logo-mark">Z</span>
           </div>
-          <h1>Welcome back</h1>
-          <p class="muted">Sign in to your Zorvyn Finance Console.</p>
+          <h1>Sign in</h1>
+          <p class="muted">Enter your credentials to continue.</p>
           <form id="loginForm" class="stack">
             <label>Email</label>
             <input id="email" type="email" placeholder="admin@finance.example.com" required />

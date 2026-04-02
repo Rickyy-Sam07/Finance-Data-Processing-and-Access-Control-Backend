@@ -98,13 +98,13 @@ function renderTrendChart(points) {
   const expensePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${x(i)},${y(p.expense)}`).join(" ");
 
   const incomeDots  = points.map((p, i) =>
-    `<circle cx="${x(i)}" cy="${y(p.income)}" r="4" fill="#00d4aa"><title>${p.month}: Income ${p.income}</title></circle>`).join("");
+    `<circle cx="${x(i)}" cy="${y(p.income)}" r="4" fill="#4ade80"><title>${p.month}: Income ${p.income}</title></circle>`).join("");
   const expenseDots = points.map((p, i) =>
-    `<circle cx="${x(i)}" cy="${y(p.expense)}" r="4" fill="#6c63ff"><title>${p.month}: Expense ${p.expense}</title></circle>`).join("");
+    `<circle cx="${x(i)}" cy="${y(p.expense)}" r="4" fill="#86efac"><title>${p.month}: Expense ${p.expense}</title></circle>`).join("");
 
   const valueLabels = points.map((p, i) =>
-    `<text x="${x(i)}" y="${Math.max(y(p.income) - 8, pad + 14)}" text-anchor="middle" font-size="10" fill="#00d4aa">${Math.round(p.income)}</text>
-     <text x="${x(i)}" y="${Math.max(y(p.expense) - 8, pad + 14)}" text-anchor="middle" font-size="10" fill="#6c63ff">${Math.round(p.expense)}</text>`).join("");
+    `<text x="${x(i)}" y="${Math.max(y(p.income) - 8, pad + 14)}" text-anchor="middle" font-size="10" fill="#4ade80">${Math.round(p.income)}</text>
+     <text x="${x(i)}" y="${Math.max(y(p.expense) - 8, pad + 14)}" text-anchor="middle" font-size="10" fill="#86efac">${Math.round(p.expense)}</text>`).join("");
 
   const labels = points.map((p, i) =>
     `<text x="${x(i)}" y="${height - 10}" text-anchor="middle" font-size="10" fill="#7a8099">${p.month}</text>`).join("");
@@ -114,11 +114,11 @@ function renderTrendChart(points) {
       <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height - pad}" stroke="rgba(255,255,255,0.1)" />
       <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="rgba(255,255,255,0.1)" />
       ${labels}
-      <path d="${incomePath}"  fill="none" stroke="#00d4aa" stroke-width="2.5" />
-      <path d="${expensePath}" fill="none" stroke="#6c63ff" stroke-width="2.5" />
+      <path d="${incomePath}"  fill="none" stroke="#4ade80" stroke-width="2.5" />
+      <path d="${expensePath}" fill="none" stroke="#86efac" stroke-width="2.5" />
       ${incomeDots}${expenseDots}${valueLabels}
-      <text x="${pad + 8}"  y="${pad + 12}" font-size="11" fill="#00d4aa">Income</text>
-      <text x="${pad + 70}" y="${pad + 12}" font-size="11" fill="#6c63ff">Expense</text>
+      <text x="${pad + 8}"  y="${pad + 12}" font-size="11" fill="#4ade80">Income</text>
+      <text x="${pad + 70}" y="${pad + 12}" font-size="11" fill="#86efac">Expense</text>
     </svg>`;
 }
 

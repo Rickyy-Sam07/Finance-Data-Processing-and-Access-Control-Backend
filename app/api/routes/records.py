@@ -35,11 +35,13 @@ def list_records(
     category: str | None = Query(default=None),
     record_type: str | None = Query(default=None, pattern="^(income|expense)$"),
     q: str | None = Query(default=None, min_length=1, max_length=100),
+    include_deleted: bool = Query(default=False),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
     db: Session = Depends(get_db),
-    _: User = Depends(require_permission("records:read")),
+    current_user: User = Depends(require_permission("records:read")),
 ) -> RecordListResponse:
+    effective_include_deleted = include_deleted and current_user.role == "admin"
     items, total = filter_records(
         db,
         start_date=start_date,
@@ -47,6 +49,7 @@ def list_records(
         category=category,
         record_type=record_type,
         q=q,
+        include_deleted=effective_include_deleted,
         skip=skip,
         limit=limit,
     )
@@ -56,10 +59,12 @@ def list_records(
 @router.get("/{record_id}", response_model=RecordResponse)
 def get_record(
     record_id: int,
+    include_deleted: bool = Query(default=False),
     db: Session = Depends(get_db),
-    _: User = Depends(require_permission("records:read")),
+    current_user: User = Depends(require_permission("records:read")),
 ) -> RecordResponse:
-    return get_record_or_404(db, record_id)
+    effective_include_deleted = include_deleted and current_user.role == "admin"
+    return get_record_or_404(db, record_id, include_deleted=effective_include_deleted)
 
 
 @router.put("/{record_id}", response_model=RecordResponse)

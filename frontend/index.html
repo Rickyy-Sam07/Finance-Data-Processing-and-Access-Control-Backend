@@ -169,6 +169,10 @@
             <option value="income">Income</option>
             <option value="expense">Expense</option>
           </select>
+          <label id="includeDeletedWrap" class="checkbox-inline hidden">
+            <input id="filterIncludeDeleted" type="checkbox" />
+            Include deleted
+          </label>
           <button id="applyFiltersBtn" class="btn-outline">Apply Filters</button>
         </div>
         <div id="adminCreateBox" class="hidden create-box">
@@ -188,10 +192,11 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Notes</th></tr></thead>
+            <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Notes</th><th>Actions</th></tr></thead>
             <tbody id="recordsTableBody"></tbody>
           </table>
         </div>
+        <div id="recordDetailPanel" class="record-detail hidden"></div>
       </section>
 
       <section id="usersSection" class="panel hidden">
@@ -252,6 +257,42 @@
     </section>
 
   </main>
+
+  <div id="editRecordModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-card panel" role="dialog" aria-modal="true" aria-labelledby="editRecordTitle">
+      <div class="modal-head">
+        <h3 id="editRecordTitle">Edit Record</h3>
+        <button id="editRecordCloseBtn" class="btn-ghost" type="button">Close</button>
+      </div>
+      <form id="editRecordForm" class="modal-form">
+        <input id="editRecordId" type="hidden" />
+        <label for="editAmount">Amount</label>
+        <input id="editAmount" type="number" step="0.01" min="0.01" required />
+
+        <label for="editType">Type</label>
+        <select id="editType" required>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+
+        <label for="editCategory">Category</label>
+        <input id="editCategory" type="text" minlength="2" maxlength="100" required />
+
+        <label for="editDate">Record Date</label>
+        <input id="editDate" type="date" required />
+
+        <label for="editNotes">Notes</label>
+        <input id="editNotes" type="text" maxlength="500" />
+
+        <p id="editRecordError" class="error"></p>
+
+        <div class="modal-actions">
+          <button id="editRecordCancelBtn" class="btn-outline" type="button">Cancel</button>
+          <button id="editRecordSaveBtn" class="btn-primary" type="submit">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <div id="toast" class="toast">
     <div class="toast-icon">

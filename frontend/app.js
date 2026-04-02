@@ -12,6 +12,54 @@ const recordsSection   = document.getElementById("recordsSection");
 const usersSection     = document.getElementById("usersSection");
 const opsSection       = document.getElementById("opsSection");
 const adminCreateBox   = document.getElementById("adminCreateBox");
+const includeDeletedWrap = document.getElementById("includeDeletedWrap");
+const editRecordModal = document.getElementById("editRecordModal");
+const editRecordForm = document.getElementById("editRecordForm");
+const editRecordError = document.getElementById("editRecordError");
+const editRecordSaveBtn = document.getElementById("editRecordSaveBtn");
+
+function setEditSaveButtonLoading(isLoading) {
+  if (!editRecordSaveBtn) return;
+  if (isLoading) {
+    editRecordSaveBtn.dataset.originalText = editRecordSaveBtn.textContent || "Save Changes";
+    editRecordSaveBtn.textContent = "Saving...";
+    editRecordSaveBtn.disabled = true;
+    editRecordSaveBtn.style.opacity = "0.85";
+    editRecordSaveBtn.style.cursor = "not-allowed";
+    return;
+  }
+
+  editRecordSaveBtn.textContent = editRecordSaveBtn.dataset.originalText || "Save Changes";
+  editRecordSaveBtn.disabled = false;
+  editRecordSaveBtn.style.opacity = "";
+  editRecordSaveBtn.style.cursor = "";
+}
+
+function setEditModalOpen(isOpen) {
+  if (!editRecordModal) return;
+  editRecordModal.classList.toggle("hidden", !isOpen);
+  editRecordModal.setAttribute("aria-hidden", String(!isOpen));
+}
+
+function openEditModal(record) {
+  if (!record || !editRecordForm) return;
+  document.getElementById("editRecordId").value = String(record.id);
+  document.getElementById("editAmount").value = String(record.amount ?? "");
+  document.getElementById("editType").value = record.type || "income";
+  document.getElementById("editCategory").value = record.category || "";
+  document.getElementById("editDate").value = record.record_date || "";
+  document.getElementById("editNotes").value = record.notes || "";
+  if (editRecordError) editRecordError.textContent = "";
+  setEditSaveButtonLoading(false);
+  setEditModalOpen(true);
+}
+
+function closeEditModal() {
+  if (editRecordForm) editRecordForm.reset();
+  if (editRecordError) editRecordError.textContent = "";
+  setEditSaveButtonLoading(false);
+  setEditModalOpen(false);
+}
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(value || 0);
@@ -71,6 +119,7 @@ function applyRoleVisibility() {
   usersSection.classList.toggle("hidden", !isAdmin);
   opsSection.classList.toggle("hidden", !isAdmin);
   adminCreateBox.classList.toggle("hidden", !isAdmin);
+  includeDeletedWrap?.classList.toggle("hidden", !isAdmin);
 }
 
 // ── Render ──
@@ -176,24 +225,100 @@ function renderHealthSnapshot(summary) {
 
 function renderRecords(records, meta = null) {
   const body = document.getElementById("recordsTableBody");
+  const detailPanel = document.getElementById("recordDetailPanel");
   const totalLabel = document.getElementById("recordsMeta");
+  const isAdmin = state.user?.role === "admin";
   if (totalLabel) {
     totalLabel.textContent = meta
       ? `Showing ${records.length} of ${meta.total} records`
       : `Showing ${records.length} records`;
   }
   if (!records.length) {
-    body.innerHTML = `<tr><td colspan="6" class="muted">No records match your filters.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7" class="muted">No records match your filters.</td></tr>`;
+    if (detailPanel) {
+      detailPanel.classList.add("hidden");
+      detailPanel.innerHTML = "";
+    }
     return;
   }
-  body.innerHTML = records.map((r) => `<tr>
-    <td>${r.id}</td>
-    <td>${r.record_date}</td>
-    <td>${r.type}</td>
-    <td>${r.category}</td>
-    <td>${formatCurrency(r.amount)}</td>
-    <td>${r.notes || "-"}</td>
-  </tr>`).join("");
+  body.innerHTML = records.map((r) => {
+    const actionButtons = isAdmin
+      ? r.is_deleted
+        ? `<button type="button" class="action-btn action-restore" data-action="restore" data-record-id="${r.id}">Restore</button>`
+        : `<button type="button" class="action-btn action-edit" data-action="edit" data-record-id="${r.id}">Edit</button>
+           <button type="button" class="action-btn action-delete" data-action="delete" data-record-id="${r.id}">Delete</button>`
+      : `<span class="muted">-</span>`;
+    return `<tr class="record-row ${r.is_deleted ? "record-row-deleted" : ""}" data-record-id="${r.id}">
+      <td>${r.id}</td>
+      <td>${r.record_date}</td>
+      <td>${r.type}</td>
+      <td>${r.category}</td>
+      <td>${formatCurrency(r.amount)}</td>
+      <td>${r.notes || "-"}</td>
+      <td><div class="record-actions">${actionButtons}</div></td>
+    </tr>`;
+  }).join("");
+
+  body.querySelectorAll(".record-row").forEach((row) => {
+    row.addEventListener("click", async () => {
+      const recordId = row.getAttribute("data-record-id");
+      if (!recordId || !detailPanel) return;
+      const includeDeleted = state.user?.role === "admin" && document.getElementById("filterIncludeDeleted")?.checked;
+      const params = includeDeleted ? "?include_deleted=true" : "";
+
+      try {
+        const record = await api(`/records/${recordId}${params}`);
+        detailPanel.classList.remove("hidden");
+        detailPanel.innerHTML = `
+          <h4>Record #${record.id} Details</h4>
+          <div class="record-detail-grid">
+            <div class="record-detail-item"><div class="k">Type</div><div class="v">${record.type}</div></div>
+            <div class="record-detail-item"><div class="k">Category</div><div class="v">${record.category}</div></div>
+            <div class="record-detail-item"><div class="k">Amount</div><div class="v">${formatCurrency(record.amount)}</div></div>
+            <div class="record-detail-item"><div class="k">Record Date</div><div class="v">${record.record_date}</div></div>
+            <div class="record-detail-item"><div class="k">Status</div><div class="v">${record.is_deleted ? "deleted" : "active"}</div></div>
+            <div class="record-detail-item"><div class="k">Created By</div><div class="v">${record.created_by}</div></div>
+            <div class="record-detail-item"><div class="k">Updated At</div><div class="v">${new Date(record.updated_at).toLocaleString()}</div></div>
+          </div>
+          <div class="record-detail-item" style="margin-top:8px;"><div class="k">Notes</div><div class="v">${record.notes || "-"}</div></div>
+        `;
+      } catch (err) {
+        showToast(err.message || "Failed to load record details");
+      }
+    });
+  });
+
+  body.querySelectorAll(".action-btn").forEach((btn) => {
+    btn.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      const action = btn.getAttribute("data-action");
+      const recordId = btn.getAttribute("data-record-id");
+      if (!recordId || !action) return;
+
+      try {
+        if (action === "delete") {
+          if (!window.confirm(`Delete record #${recordId}?`)) return;
+          await api(`/records/${recordId}`, { method: "DELETE" });
+          showToast(`Record #${recordId} deleted.`);
+        }
+
+        if (action === "restore") {
+          await api(`/records/${recordId}/restore`, { method: "POST" });
+          showToast(`Record #${recordId} restored.`);
+        }
+
+        if (action === "edit") {
+          const current = records.find((r) => String(r.id) === String(recordId));
+          if (!current) return;
+          openEditModal(current);
+        }
+
+        await loadDashboardData();
+      } catch (err) {
+        showToast(err.message || "Failed to update record");
+      }
+    });
+  });
 }
 
 function renderUsers(users) {
@@ -250,6 +375,8 @@ async function loadDashboardData() {
     if (search)   qs.set("q", search);
     if (category) qs.set("category", category);
     if (type)     qs.set("record_type", type);
+    const includeDeleted = state.user.role === "admin" && document.getElementById("filterIncludeDeleted")?.checked;
+    if (includeDeleted) qs.set("include_deleted", "true");
 
     const recordsPayload = await api(`/records${qs.toString() ? `?${qs.toString()}` : ""}`);
     state.recordsMeta = recordsPayload;
@@ -345,6 +472,79 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 document.getElementById("applyFiltersBtn").addEventListener("click", async () => {
   if (!state.user) return;
   await loadDashboardData();
+});
+
+document.getElementById("filterIncludeDeleted")?.addEventListener("change", async () => {
+  if (!state.user || state.user.role !== "admin") return;
+  await loadDashboardData();
+});
+
+document.getElementById("editRecordCloseBtn")?.addEventListener("click", () => {
+  closeEditModal();
+});
+
+document.getElementById("editRecordCancelBtn")?.addEventListener("click", () => {
+  closeEditModal();
+});
+
+editRecordModal?.addEventListener("click", (event) => {
+  if (event.target === editRecordModal) {
+    closeEditModal();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && editRecordModal && !editRecordModal.classList.contains("hidden")) {
+    closeEditModal();
+  }
+});
+
+editRecordForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (editRecordError) editRecordError.textContent = "";
+  const id = document.getElementById("editRecordId").value;
+  const amount = Number(document.getElementById("editAmount").value);
+  const type = document.getElementById("editType").value;
+  const category = document.getElementById("editCategory").value.trim();
+  const recordDate = document.getElementById("editDate").value;
+  const notes = document.getElementById("editNotes").value.trim();
+
+  if (!id) {
+    if (editRecordError) editRecordError.textContent = "Record id is missing.";
+    return;
+  }
+  if (!Number.isFinite(amount) || amount <= 0) {
+    if (editRecordError) editRecordError.textContent = "Amount must be a number greater than 0.";
+    return;
+  }
+  if (category.length < 2) {
+    if (editRecordError) editRecordError.textContent = "Category must be at least 2 characters.";
+    return;
+  }
+  if (!recordDate) {
+    if (editRecordError) editRecordError.textContent = "Record date is required.";
+    return;
+  }
+
+  setEditSaveButtonLoading(true);
+  try {
+    await api(`/records/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        amount,
+        type,
+        category,
+        record_date: recordDate,
+        notes: notes || null,
+      }),
+    });
+    closeEditModal();
+    showToast(`Record #${id} updated.`);
+    await loadDashboardData();
+  } catch (err) {
+    if (editRecordError) editRecordError.textContent = err.message || "Failed to update record.";
+    setEditSaveButtonLoading(false);
+  }
 });
 
 document.getElementById("createRecordForm").addEventListener("submit", async (e) => {

@@ -150,10 +150,13 @@ def filter_records(
     category: str | None,
     record_type: str | None,
     q: str | None,
+    include_deleted: bool,
     skip: int,
     limit: int,
 ):
-    query = db.query(FinancialRecord).filter(FinancialRecord.is_deleted.is_(False))
+    query = db.query(FinancialRecord)
+    if not include_deleted:
+        query = query.filter(FinancialRecord.is_deleted.is_(False))
     if start_date:
         query = query.filter(FinancialRecord.record_date >= start_date)
     if end_date:

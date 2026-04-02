@@ -26,6 +26,8 @@ class RecordResponse(BaseModel):
     category: str
     record_date: date
     notes: str | None
+    is_deleted: bool
+    deleted_at: datetime | None
     created_by: int
     created_at: datetime
     updated_at: datetime

@@ -1,46 +1,101 @@
 # Finance Data Processing and Access Control Backend
 
-Assessment-ready backend with a lightweight frontend dashboard.
+Production-minded assessment project that demonstrates secure finance record management, role-based access control, and operational traceability end to end.
 
-It demonstrates:
-- Structured backend architecture (route -> service -> model)
-- Role-based access control (viewer, analyst, admin)
-- Financial record CRUD + filtering + pagination metadata
-- Dashboard analytics APIs
-- Structured audit log query APIs
-- Event-driven outbox pipeline with optional Kafka publishing
-- Login rate limiting
-- Migration-driven schema management with Alembic
-- Deployment artifacts for Docker/Render
+## Project Summary
+
+This project was built to solve three practical backend problems:
+
+1. Enforce who can access or modify financial data.
+2. Provide reliable record lifecycle operations (create/read/update/delete/restore).
+3. Make system behavior observable through audits, analytics, and event tracking.
+
+It includes a FastAPI backend, SQLAlchemy + Alembic data layer, JWT auth with RBAC, and a lightweight frontend dashboard served by the same app.
+
+## What We Implemented and Why It Helped
+
+| What We Implemented | Why It Helped |
+|---|---|
+| JWT auth with access + refresh tokens | Improved session security and allowed controlled token renewal |
+| RBAC with viewer/analyst/admin roles | Prevented unauthorized record or user operations |
+| Record CRUD with soft delete + restore | Preserved data history while enabling safe rollback of deletes |
+| Filter/search/pagination on records | Made data retrieval scalable and evaluator-friendly |
+| Dashboard summary APIs with trends | Provided quick business insight (income, expense, net, activity) |
+| Audit logs for mutations | Added traceability of who changed what and when |
+| Outbox-based domain events + retry | Reduced event loss risk and improved reliability under broker failures |
+| Login rate limiting | Reduced brute-force login risk |
+| Migration-managed schema lifecycle | Kept DB changes reproducible across local/deploy environments |
+| Admin operations panel (audits/events) | Improved operational visibility during demos and debugging |
+
+## High-Impact Features
+
+- Secure authentication and authorization boundaries
+- Soft-delete lifecycle for financial records
+- 6-month trend analytics with zero-filled missing months
+- Structured audit and event observability
+- Admin-only event retry controls
+- Deployment-ready artifacts for Docker and Render
+
+## Architecture Diagram (Mermaid)
+
+```mermaid
+flowchart TD
+   FE[Frontend Dashboard] -->|Login / Actions| API[FastAPI Application]
+
+   subgraph Security
+      AUTH[JWT Auth]
+      RBAC[Role Permission Checks]
+      RL[Login Rate Limiter]
+   end
+
+   API --> AUTH
+   API --> RBAC
+   API --> RL
+
+   API --> ROUTES[API Routes]
+   ROUTES --> SERVICES[Service Layer]
+   SERVICES --> DB[(SQLite / PostgreSQL)]
+
+   SERVICES --> AUDIT[(audit_logs)]
+   SERVICES --> OUTBOX[(domain_events)]
+   OUTBOX -->|Optional publish| KAFKA[(Kafka Topic)]
+   API -->|Admin retry| OUTBOX
+
+   ALEMBIC[Alembic Migrations] --> DB
+```
 
 ## Tech Stack
+
 - FastAPI
-- SQLAlchemy
+- SQLAlchemy ORM
 - Alembic
 - SQLite (local default) / PostgreSQL (deployment)
-- JWT authentication
-- Vanilla JS frontend + Chart.js
+- JWT (python-jose)
+- Vanilla JS frontend + SVG chart rendering
 - Pytest
 
 ## Roles and Access Matrix
+
 - viewer: `dashboard:read`
 - analyst: `dashboard:read`, `records:read`
-- admin: full records management, user management, audit log read
+- admin: full records management, user management, audit/events access
 
 ## API Highlights
+
 - `POST /auth/login` (rate limited)
-- `POST /auth/refresh` (refresh token rotation)
+- `POST /auth/refresh`
 - `GET /auth/me`
 - `GET /dashboard/summary`
-- `GET /records` (returns `items`, `total`, `skip`, `limit`, supports `q` text search)
+- `GET /records` (supports `q`, filters, `skip`, `limit`, optional `include_deleted` for admin)
 - `POST /records`, `PUT /records/{id}`, `DELETE /records/{id}`
 - `POST /records/{id}/restore`
 - `POST /users`, `GET /users`, `PATCH /users/{id}/status`, `PATCH /users/{id}/role`
-- `GET /audits` with filters (`actor_user_id`, `action`, `resource_type`, `from_ts`, `to_ts`)
-- `GET /events` and `POST /events/retry` (admin) for outbox/event pipeline observability
+- `GET /audits` (filtered, paginated)
+- `GET /events`, `POST /events/retry` (admin)
 
 ## Local Setup
-1. Create and activate venv
+
+1. Create and activate virtual environment
 
 ```bash
 python -m venv .venv
@@ -59,76 +114,84 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-4. Apply migrations and seed demo data
+4. Seed data and run migrations
 
 ```bash
 python scripts/seed_data.py
 ```
 
-5. Run app (port 8001)
+5. Start application (port 8001)
 
 ```bash
 python app/main.py
 ```
 
 6. Open
+
 - Frontend: http://127.0.0.1:8001/
-- Swagger: http://127.0.0.1:8001/docs
+- API Docs: http://127.0.0.1:8001/docs
 - Health: http://127.0.0.1:8001/health
 
 ## Demo Credentials
+
 - admin@finance.example.com / Admin@123
 - analyst@finance.example.com / Analyst@123
 - viewer@finance.example.com / Viewer@123
 
 ## Testing
+
 ```bash
 pytest -q
 ```
 
-## Migration Commands
+Coverage areas include RBAC, dashboard summary, records search/soft-delete/restore, audits/events permissions, refresh flow, and rate limiting.
+
+## Database Migration Commands
+
 ```bash
 alembic upgrade head
 alembic downgrade -1
 ```
 
-## Deployment Ready Files
+## Deployment Readiness
+
+Included artifacts:
+
 - `Dockerfile`
 - `.dockerignore`
 - `render.yaml`
 - `Procfile`
 
-## Deploy to Render (Example)
-1. Create a new Web Service from this repo.
-2. Render reads `render.yaml` automatically.
-3. Add env vars:
+### Render Deployment (Example)
+
+1. Create a new web service from this repository.
+2. Let Render read `render.yaml`.
+3. Set environment variables:
    - `JWT_SECRET_KEY`
    - `DATABASE_URL` (PostgreSQL)
 4. Deploy.
 
-## Public URLs (Fill after deploy)
-- Live App URL: `<add-your-render-url>`
-- Public API Docs URL: `<add-your-render-url>/docs`
+## Project Structure Reference
 
-## Submission Extras
-- Architecture diagram: `docs/architecture.md`
-- ADR: `docs/adr-001-backend-architecture.md`
-- Demo flow script: `docs/demo-script.md`
-- Quick API walkthrough helper: `scripts/demo_flow.py`
+- `app/api/routes`: endpoint handlers
+- `app/services`: business logic (records, dashboard, audits, events)
+- `app/models`: SQLAlchemy entities
+- `app/schemas`: request/response contracts
+- `alembic/versions`: migration history
+- `frontend/`: static dashboard UI
+- `tests/`: API behavior and security coverage
 
 ## Assumptions and Tradeoffs
-- Single-tenant scope for clarity.
+
+- Single-tenant scope for assessment clarity.
 - One-currency model.
-- No external payment integrations.
-- In-memory rate limiting is suitable for assessment/demo; distributed rate limiting is recommended for multi-instance production.
-- Records use soft delete (`is_deleted`, `deleted_at`) so deleted data can be restored and is excluded from normal list/summary endpoints.
-- Event-driven design uses a transactional outbox table (`domain_events`) and optional Kafka fan-out when brokers are configured.
+- No external payment gateway integration.
+- In-memory rate limiter is suitable for single-instance demo; Redis/distributed limiters are preferred for scale.
+- Outbox pattern improves resilience, but high-scale production should move publishing to a background worker.
 
-## Event-Driven Architecture Notes
-- Record mutations emit domain events (`record.created`, `record.updated`, `record.deleted`, `record.restored`).
-- Events are persisted in `domain_events` with status tracking (`pending`, `published`, `skipped`).
-- If `KAFKA_BOOTSTRAP_SERVERS` is configured, events are published to `KAFKA_TOPIC`.
-- If Kafka is unavailable, events remain in `pending` and can be retried via `POST /events/retry`.
+## Additional Documentation
 
-## Frontend Plotting Reliability
-- Charts are rendered with built-in SVG (no external chart CDN dependency), so plotting works in offline/restricted networks.
+- Architecture notes: `docs/architecture.md`
+- ADR: `docs/adr-001-backend-architecture.md`
+- Demo script: `docs/demo-script.md`
+- API walkthrough helper: `scripts/demo_flow.py`

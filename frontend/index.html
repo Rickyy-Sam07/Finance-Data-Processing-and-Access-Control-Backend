@@ -3,37 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zorvyn Finance Dashboard</title>
+  <title>Zorvyn Finance</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/frontend/styles.css?v=20260403" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/frontend/styles.css?v=20260405" />
 </head>
 <body>
-  <div class="ambient"></div>
+  <!-- Animated background orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
   <main class="shell">
-    <section id="loginSection" class="panel auth-panel">
-      <h1>Zorvyn Finance Console</h1>
-      <p class="muted">Sign in to access role-based analytics and records.</p>
-      <form id="loginForm" class="stack">
-        <label>Email</label>
-        <input id="email" type="email" placeholder="admin@finance.example.com" required />
-        <label>Password</label>
-        <input id="password" type="password" placeholder="Admin@123" required />
-        <button type="submit">Sign In</button>
-      </form>
-      <p id="loginError" class="error"></p>
+
+    <!-- ── LANDING PAGE ── -->
+    <section id="landingSection">
+      <nav class="landing-nav">
+        <div class="logo">
+          <span class="logo-mark">Z</span>
+          <span class="logo-text">Zorvyn</span>
+        </div>
+        <button id="navSignInBtn" class="btn-outline">Sign In</button>
+      </nav>
+
+      <div class="hero">
+        <div class="hero-badge">Finance Data Processing Platform</div>
+        <h1 class="hero-title">
+          Intelligent Finance<br />
+          <span class="gradient-text">Analytics & Control</span>
+        </h1>
+        <p class="hero-sub">
+          Role-based access control, real-time summaries, audit trails,
+          and event-driven pipelines — all in one secure console.
+        </p>
+        <div class="hero-actions">
+          <button id="heroGetStartedBtn" class="btn-primary btn-lg">
+            Get Started
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <a href="/docs" target="_blank" class="btn-ghost btn-lg">View API Docs</a>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🔐</div>
+            <div class="feature-title">Role-Based Access</div>
+            <div class="feature-desc">Viewer, Analyst, Admin — granular permission layers.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">Live Analytics</div>
+            <div class="feature-desc">Monthly trends, category breakdowns, health snapshots.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📋</div>
+            <div class="feature-title">Audit Trails</div>
+            <div class="feature-desc">Every action logged with actor, resource, and timestamp.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-title">Event Pipeline</div>
+            <div class="feature-desc">Transactional outbox with optional Kafka fan-out.</div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="landing-footer">
+        <span class="muted">Built with FastAPI · SQLAlchemy · JWT · Alembic</span>
+      </footer>
     </section>
 
+    <!-- ── LOGIN ── -->
+    <section id="loginSection" class="hidden">
+      <div class="auth-wrap">
+        <button id="backToLandingBtn" class="back-btn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back
+        </button>
+        <div class="panel auth-panel">
+          <div class="auth-logo">
+            <span class="logo-mark">Z</span>
+          </div>
+          <h1>Welcome back</h1>
+          <p class="muted">Sign in to your Zorvyn Finance Console.</p>
+          <form id="loginForm" class="stack">
+            <label>Email</label>
+            <input id="email" type="email" placeholder="admin@finance.example.com" required />
+            <label>Password</label>
+            <input id="password" type="password" placeholder="Admin@123" required />
+            <button type="submit" class="btn-primary">Sign In</button>
+          </form>
+          <p id="loginError" class="error"></p>
+          <div class="demo-creds">
+            <p class="muted" style="font-size:12px;margin-bottom:6px;">Demo credentials</p>
+            <div class="cred-pills">
+              <span class="cred-pill" data-email="admin@finance.example.com" data-pass="Admin@123">admin</span>
+              <span class="cred-pill" data-email="analyst@finance.example.com" data-pass="Analyst@123">analyst</span>
+              <span class="cred-pill" data-email="viewer@finance.example.com" data-pass="Viewer@123">viewer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DASHBOARD ── -->
     <section id="dashboardSection" class="hidden">
       <header class="topbar panel">
-        <div>
-          <h2>Finance Data Processing Dashboard</h2>
-          <p class="muted">Assessment build with RBAC, live summaries, and operational views.</p>
+        <div class="topbar-brand">
+          <span class="logo-mark sm">Z</span>
+          <div>
+            <h2>Finance Dashboard</h2>
+            <p class="muted">RBAC · Live summaries · Operational views</p>
+          </div>
         </div>
         <div class="top-actions">
           <span id="roleBadge" class="badge"></span>
-          <button id="logoutBtn" class="ghost">Logout</button>
+          <button id="logoutBtn" class="btn-outline">Logout</button>
         </div>
       </header>
 
@@ -50,13 +136,23 @@
         </article>
       </section>
 
+      <section class="insights-grid">
+        <article class="panel insight-panel">
+          <h3>Category Highlights</h3>
+          <div id="categoryHighlights"></div>
+        </article>
+        <article class="panel insight-panel">
+          <h3>Financial Health Snapshot</h3>
+          <div id="healthSnapshot"></div>
+        </article>
+      </section>
+
       <section id="recordsSection" class="panel hidden">
         <div class="section-head">
           <h3>Financial Records</h3>
           <p class="muted">Visible for analyst and admin roles.</p>
           <p id="recordsMeta" class="muted"></p>
         </div>
-
         <div class="filters">
           <input id="filterSearch" placeholder="Search text (e.g. monthly salary)" aria-label="Search text" />
           <input id="filterCategory" placeholder="Category (exact match)" aria-label="Category" />
@@ -65,9 +161,8 @@
             <option value="income">Income</option>
             <option value="expense">Expense</option>
           </select>
-          <button id="applyFiltersBtn" class="ghost">Apply Filters</button>
+          <button id="applyFiltersBtn" class="btn-outline">Apply Filters</button>
         </div>
-
         <div id="adminCreateBox" class="hidden create-box">
           <h4>Create Record (Admin)</h4>
           <form id="createRecordForm" class="inline-form">
@@ -79,23 +174,13 @@
             <input id="newCategory" placeholder="Category" required />
             <input id="newDate" type="date" required />
             <input id="newNotes" placeholder="Notes" />
-            <button type="submit">Create</button>
+            <button type="submit" class="btn-primary">Create</button>
           </form>
           <p id="createRecordError" class="error"></p>
         </div>
-
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
+            <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Notes</th></tr></thead>
             <tbody id="recordsTableBody"></tbody>
           </table>
         </div>
@@ -106,7 +191,6 @@
           <h3>User Access Management</h3>
           <p class="muted">Admin-only access control panel.</p>
         </div>
-
         <form id="createUserForm" class="inline-form">
           <input id="newUserEmail" type="email" placeholder="Email" required />
           <input id="newUserName" placeholder="Full name" required />
@@ -116,28 +200,51 @@
             <option value="analyst">Analyst</option>
             <option value="admin">Admin</option>
           </select>
-          <button type="submit">Create User</button>
+          <button type="submit" class="btn-primary">Create User</button>
         </form>
         <p id="createUserError" class="error"></p>
-
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Email</th>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Status</th>
-              </tr>
-            </thead>
+            <thead><tr><th>ID</th><th>Email</th><th>Name</th><th>Role</th><th>Status</th></tr></thead>
             <tbody id="usersTableBody"></tbody>
           </table>
         </div>
       </section>
+
+      <section id="opsSection" class="panel hidden">
+        <div class="section-head">
+          <h3>Operational Stream</h3>
+          <p class="muted">Admin-only operational visibility for audits and outbox events.</p>
+        </div>
+        <div class="ops-actions">
+          <button id="retryEventsBtn" class="btn-outline">Retry Pending Events</button>
+          <span id="retryEventsStatus" class="muted"></span>
+        </div>
+        <div class="ops-grid">
+          <div>
+            <h4>Recent Audits</h4>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Action</th><th>Resource</th><th>Actor</th><th>Time</th></tr></thead>
+                <tbody id="auditTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h4>Event Outbox</h4>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Event</th><th>Aggregate</th><th>Status</th><th>Created</th></tr></thead>
+                <tbody id="eventTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
     </section>
+
   </main>
 
-  <script src="/frontend/app.js?v=20260403"></script>
+  <script src="/frontend/app.js?v=20260405"></script>
 </body>
 </html>

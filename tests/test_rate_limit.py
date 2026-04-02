@@ -9,7 +9,7 @@ client = TestClient(app)
 def test_login_rate_limit_for_invalid_attempts():
     reset_rate_limits()
     last_status = None
-    for _ in range(120):
+    for _ in range(60):
         response = client.post(
             "/auth/login",
             json={"email": "invalid@finance.example.com", "password": "wrongpassword"},
